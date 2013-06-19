@@ -49,20 +49,37 @@ class android::sdk {
     case $::osfamily {
       'RedHat': {
         # list 64-bit version and use latest for installation too so that the same version is applied to both
-        $32bit_packages =  [ 'glibc.i686', 'zlib.i686', 'libstdc++.i686', 
+        $thirty_two_bit_packages =  [ 'glibc.i686', 'zlib.i686', 'libstdc++.i686', 
                              'zlib', 'libstdc++' ]
       }
       'Debian': {
-        $32bit_packages =  [ 'ia32-libs' ]
+        $thirty_two_bit_packages =  [ 'ia32-libs' ]
       }
       default : {
-        $32bit_packages = undef
+        $thirty_two_bit_packages = undef
       }
     }
-    if $32bit_packages != undef {
-      package { $32bit_packages:
+    if $thirty_two_bit_packages != undef {
+      package { $thirty_two_bit_packages:
         ensure => latest,
       }
     }
   }
+
+  case $::kernel {
+    'Linux': {
+      $sdk_home     = "${android::installdir}/android-sdk-linux"
+      file { '/etc/profile.d/android_sdk.sh':
+        ensure  => file,
+        mode    => '0644',
+        content => template("${module_name}/android-sdk.sh.erb"),
+      }
+    }
+    'Darwin': {
+      fail('fix me')
+    }
+    default: {
+      fail("Unsupported Kernel: ${::kernel} operatingsystem: ${::operatingsystem}")
+     }
+   }
 }
